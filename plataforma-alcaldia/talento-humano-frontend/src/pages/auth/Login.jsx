@@ -1,49 +1,43 @@
 import { useState } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthProvider";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
-  const [form, setForm] = useState({ username: "", password: "" });
-
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-  e.preventDefault();
+  const [form, setForm] = useState({
+    usuario: "",
+    password: ""
+  });
 
-  // Simulación más real
-  if (form.username === "admin") {
-    login({
-      username: "admin",
-      rol: "admin",
-      nombre: "Administrador",
-      permisos: ["todo"]
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
     });
-  } else if (form.username === "talento") {
-    login({
-      username: "talento",
-      rol: "talento",
-      nombre: "Gestión Humana"
-    });
-  } else {
-    login({
-      username: form.username,
-      rol: "consulta",
-      nombre: "Invitado"
-    });
-  }
+  };
 
-  navigate("/");
-};
+  const handleLogin = (e) => {
+    e.preventDefault();
+
+    if (form.usuario === "admin") {
+      login({ nombre: "Admin", rol: "admin" });
+      navigate("/");
+    } else {
+      alert("Usuario inválido");
+    }
+  };
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", marginTop: "100px" }}>
-      <form onSubmit={handleSubmit}>
-        <h2>Login</h2>
+    <div style={{ padding: "50px" }}>
+      <h2>Login</h2>
 
-        <input name="username" placeholder="Usuario" onChange={(e)=>setForm({...form, username:e.target.value})}/>
-        <input name="password" type="password" placeholder="Contraseña" onChange={(e)=>setForm({...form, password:e.target.value})}/>
-
+      <form onSubmit={handleLogin}>
+        <input name="usuario" placeholder="Usuario" onChange={handleChange} />
+        <br />
+        <input name="password" type="password" placeholder="Contraseña" onChange={handleChange} />
+        <br />
         <button type="submit">Ingresar</button>
       </form>
     </div>

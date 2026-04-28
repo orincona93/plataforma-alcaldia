@@ -1,16 +1,24 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthProvider";
 
 function Sidebar() {
   const [open, setOpen] = useState(true);
+  const [openMenus, setOpenMenus] = useState({});
   const { user, logout } = useAuth();
+
+  const toggleMenu = (index) => {
+    setOpenMenus({
+      ...openMenus,
+      [index]: !openMenus[index]
+    });
+  };
 
   const menu = [
     {
       nombre: "Dashboard",
       ruta: "/",
-      roles: ["admin", "usuario"]
+      roles: ["admin", "usuario", "consulta"]
     },
     {
       nombre: "Talento Humano",
@@ -20,9 +28,17 @@ function Sidebar() {
       ]
     },
     {
-    nombre: "Permisos",
-    roles: ["admin", "talento"],
-    ruta: "/permisos"
+      nombre: "Permisos",
+      roles: ["admin", "talento"],
+      ruta: "/permisos"
+    },
+    {
+      nombre: "Convenios",
+      roles: ["admin"],
+      submenus: [
+        { nombre: "Listado", ruta: "/convenios" },
+        { nombre: "Dashboard", ruta: "/convenios-dashboard" }
+      ]
     }
   ];
 
@@ -39,6 +55,7 @@ function Sidebar() {
 
       {/* TOP */}
       <div>
+
         <div style={{
           padding: "15px",
           fontWeight: "bold",
@@ -63,37 +80,49 @@ function Sidebar() {
 
         <div style={{ padding: "10px" }}>
           {menu.map((item, index) => {
-            if (!item.roles.includes(user?.rol)) return null;
+
+            if (!user || !item.roles.includes(user.rol)) return null;
 
             return (
               <div key={index} style={{ marginBottom: "10px" }}>
-                
-                {open && (
-                  <p style={{
-                    fontSize: "12px",
-                    opacity: 0.7,
-                    marginBottom: "5px"
-                  }}>
-                    {item.nombre}
-                  </p>
-                )}
 
+                {/* TITULO */}
+                <div
+                  onClick={() => item.submenus && toggleMenu(index)}
+                  style={{
+                    cursor: item.submenus ? "pointer" : "default",
+                    padding: "8px",
+                    fontWeight: "bold",
+                    background: "rgba(0,0,0,0.1)",
+                    borderRadius: "5px"
+                  }}
+                >
+                  {open ? item.nombre : "•"}
+                </div>
+
+                {/* LINK DIRECTO */}
                 {item.ruta && (
                   <Link to={item.ruta} style={linkStyle}>
-                    {open ? item.nombre : "•"}
+                    {open ? "• " + item.nombre : "•"}
                   </Link>
                 )}
 
-                {item.submenus &&
-                  item.submenus.map((sub, i) => (
-                    <Link key={i} to={sub.ruta} style={linkStyle}>
-                      {open ? "• " + sub.nombre : "•"}
-                    </Link>
-                  ))}
+                {/* SUBMENUS */}
+                {item.submenus && openMenus[index] && (
+                  <div style={{ marginLeft: "10px" }}>
+                    {item.submenus.map((sub, i) => (
+                      <Link key={i} to={sub.ruta} style={linkStyle}>
+                        {open ? "→ " + sub.nombre : "•"}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
               </div>
             );
           })}
         </div>
+
       </div>
 
       {/* BOTTOM */}
@@ -112,6 +141,7 @@ function Sidebar() {
           Salir
         </button>
       </div>
+
     </div>
   );
 }
